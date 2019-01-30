@@ -1,0 +1,31 @@
+{
+  "name": "hooked",
+  "version": "0.1.0-beta",
+  "description": "Hook up all the functions!",
+  "main": "dist/hooked.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/rollup/bin/rollup -c",
+    "watch": "./node_modules/rollup/bin/rollup -c -w"
+  },
+  "keywords": [
+    "functional",
+    "hooks",
+    "react",
+    "web-components",
+    "webcomponents",
+    "preact"
+  ],
+  "author": "Michael Klein",
+  "license": "MIT",
+  "dependencies": {
+    "htm": "^2.0.0"
+  },
+  "devDependencies": {
+    "rollup": "^1.1.2",
+    "rollup-plugin-terser": "^4.0.2"
+  }
+}
