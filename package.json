@@ -1,5 +1,5 @@
 {
-  "name": "hooked",
+  "name": "hookuspocus",
   "version": "0.1.0-beta",
   "description": "Hook up all the functions!",
   "main": "dist/hooked.js",
@@ -11,6 +11,10 @@
     "build": "./node_modules/rollup/bin/rollup -c",
     "watch": "./node_modules/rollup/bin/rollup -c -w"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://https://github.com/michael-klein/hookuspocus.git"
+  },
   "keywords": [
     "functional",
     "hooks",
@@ -21,6 +25,10 @@
   ],
   "author": "Michael Klein",
   "license": "MIT",
+  "bugs": {
+    "url": "https://https://github.com/michael-klein/hookuspocus/issues"
+  },
+  "homepage": "https://https://github.com/michael-klein/hookuspocus#readme",
   "dependencies": {
     "htm": "^2.0.0"
   },
