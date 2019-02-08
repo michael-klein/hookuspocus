@@ -1,5 +1,4 @@
 const OUTSIDE_RUN = Symbol("outside_run");
-let currentHookStateIndex;
 let currentRun = OUTSIDE_RUN;
 const hookStateMap = new (WeakMap ? WeakMap : Map)();
 const reset = () => {
@@ -7,10 +6,10 @@ const reset = () => {
 };
 const createHookApi = name => {
   const hookStates = hookStateMap.get(currentRun.context);
-  if (hookStates[currentHookStateIndex] === undefined) {
-    hookStates[currentHookStateIndex] = {};
+  if (hookStates[currentRun.hookStateIndex] === undefined) {
+    hookStates[currentRun.hookStateIndex] = {};
   }
-  const hookState = hookStates[currentHookStateIndex];
+  const hookState = hookStates[currentRun.hookStateIndex];
   const onStateChange = currentRun.onStateChange;
   return {
     onCleanUp(callback) {
@@ -21,9 +20,6 @@ const createHookApi = name => {
     },
     afterCurrentRun(callback) {
       hookState.afterCurrentRun = callback;
-    },
-    getApi() {
-      return currentRun.api;
     },
     getContext() {
       return currentRun.context;
@@ -43,7 +39,7 @@ const createHook = (name, hook) => {
   return (...args) => {
     if (currentRun.context === OUTSIDE_RUN)
       throw new Error("Hook was called outside of run()!");
-    currentHookStateIndex++;
+    currentRun.hookStateIndex++;
     const hookApi = createHookApi(name);
     return hook(...args, hookApi);
   };
@@ -58,30 +54,35 @@ function runLifeCycleCallback(name, hookStates, length) {
     }
   }
 }
-const run = (
-  callback,
-  { context, api, onStateChange = () => {} } = {}
-) => {
-  if (!context) context = callback;
-  if (!(context instanceof Object))
+const cleanUp = context => {
+  const hookStates = hookStateMap.get(context);
+  runLifeCycleCallback("cleanUp", hookStates, hookStates.length);
+};
+const dispose = context => {
+  const hookStates = hookStateMap.get(context);
+  runLifeCycleCallback("cleanUp", hookStates, hookStates.length);
+  hookStateMap.delete(context);
+};
+const run = (runData, ...args) => {
+  if (typeof runData === "function") {
+    runData = {
+      context: runData,
+      function: runData
+    };
+  }
+  if (!(runData.context instanceof Object))
     throw new Error("Run was called without a valid object context!");
-  if (currentRun !== OUTSIDE_RUN)
-    throw new Error("Run was called before the end of the previous run!");
-  currentRun = {
-    context,
-    api,
-    onStateChange
-  };
-  currentHookStateIndex = -1;
+  currentRun = runData;
+  currentRun.hookStateIndex = -1;
   let init = false;
-  if (!hookStateMap.has(context)) {
-    hookStateMap.set(context, []);
+  if (!hookStateMap.has(currentRun.context)) {
+    hookStateMap.set(currentRun.context, []);
     init = true;
   }
   const hookStates = hookStateMap.get(currentRun.context);
   const length = hookStates.length;
   runLifeCycleCallback("beforeNextRun", hookStates, length);
-  const result = callback();
+  const result = runData.function(...args);
   if (result instanceof Promise) {
     return result.then(value => {
       runLifeCycleCallback(
@@ -167,5 +168,5 @@ const useEffect = createHook("useEffect", (effect, ...rest) => {
   }
 });
 
-export { createHook, run, useReducer, useState, useEffect };
+export { createHook, cleanUp, dispose, run, useReducer, useState, useEffect };
 //# sourceMappingURL=hooked.mjs.map
