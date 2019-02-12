@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="400px" src="https://i.imgur.com/07GGYjZ.png" alt="hookus pokus logo">
+  <img width="400px" src="https://i.imgur.com/zLWcMlv.png" alt="hookus pokus logo">
 </p>
 <p align="center">
   Hookuspokus - add hooks to all the functions!
