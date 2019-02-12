@@ -13,6 +13,3 @@ It provides the basic hooks from which you can build more complex hooks:
 - useState
 - useEffect
 
-# How it works
-
-## base hook
