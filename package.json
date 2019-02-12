@@ -37,7 +37,8 @@
     "@pika/pack": "^0.3.1",
     "@pika/plugin-build-umd": "^0.3.9",
     "@pika/plugin-build-web": "^0.3.9",
-    "@pika/plugin-standard-pkg": "^0.3.9"
+    "@pika/plugin-standard-pkg": "^0.3.9",
+    "pika-plugin-minify": "^0.1.0"
   },
   "@pika/pack": {
     "pipeline": [
