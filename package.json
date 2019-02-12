@@ -1,6 +1,6 @@
 {
   "name": "hookuspocus",
-  "version": "0.1.0-beta",
+  "version": "0.1.0",
   "description": "Hook up all the functions!",
   "main": "src/index.js",
   "directories": {
