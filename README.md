@@ -2,7 +2,7 @@
   <img width="400px" src="https://i.imgur.com/zLWcMlv.png" alt="hookus pokus logo">
 </p>
 <p align="center">
-  Hookuspokus - add hooks to all the functions!
+  Add hooks to all the functions!
 </p>
 
 This is a small JavaScript library that will allow you to add hooks ([see react docs](https://reactjs.org/docs/hooks-intro.html)) to any function.
