@@ -4,7 +4,7 @@
 <p align="center">
   <b>Add hooks to all the functions!</b>
 </p>
-
+<br><br>
 This is a small JavaScript library that will allow you to add hooks ([see react docs](https://reactjs.org/docs/hooks-intro.html)) to any function.
 
 It provides the basic hooks from which you can build more complex hooks:
