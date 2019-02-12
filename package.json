@@ -2,14 +2,17 @@
   "name": "hookuspocus",
   "version": "0.1.0-beta",
   "description": "Hook up all the functions!",
-  "main": "dist/hooked.js",
+  "main": "src/hooked.js",
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/rollup/bin/rollup -c",
-    "watch": "./node_modules/rollup/bin/rollup -c -w"
+    "publish": "./node_modules/@pika/pack/dist-node/index.bin.js build && npm run minify",
+    "pack": "./node_modules/@pika/pack/dist-node/index.bin.js build && npm run minify",
+    "minify": "npm run minify-src && npm run minify-umd && npm run minify-src && npm run minify-web",
+    "minify-src": "./node_modules/.bin/babel ./pkg/dist-src/index.js --out-file ./pkg/dist-src/index.min.js -s --presets minify",
+    "minify-umd": "./node_modules/.bin/babel ./pkg/dist-umd/index.js --out-file ./pkg/dist-umd/index.min.js -s --presets minify",
+    "minify-web": "./node_modules/.bin/babel ./pkg/dist-web/index.js --out-file ./pkg/dist-web/index.min.js -s --presets minify"
   },
   "repository": {
     "type": "git",
@@ -29,11 +32,43 @@
     "url": "https://https://github.com/michael-klein/hookuspocus/issues"
   },
   "homepage": "https://https://github.com/michael-klein/hookuspocus#readme",
-  "dependencies": {
-    "htm": "^2.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "rollup": "^1.1.2",
-    "rollup-plugin-terser": "^4.0.2"
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@pika/pack": "^0.3.1",
+    "@pika/plugin-build-umd": "^0.3.9",
+    "@pika/plugin-build-web": "^0.3.9",
+    "@pika/plugin-standard-pkg": "^0.3.9",
+    "pika-plugin-minify": "file:pika-plugin-minify"
+  },
+  "@pika/pack": {
+    "pipeline": [
+      [
+        "@pika/plugin-standard-pkg",
+        {
+          "exclude": [
+            "__tests__/*",
+            "example/*",
+            "pica-plugin-minify/*"
+          ]
+        }
+      ],
+      [
+        "@pika/plugin-build-web"
+      ],
+      [
+        "@pika/plugin-build-umd",
+        {
+          "name": "hookuspocus"
+        }
+      ],
+      [
+        "pika-plugin-minify",
+        {
+          "test": "hi"
+        }
+      ]
+    ]
   }
 }

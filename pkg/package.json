@@ -1,0 +1,42 @@
+{
+  "name": "hookuspocus",
+  "description": "Hook up all the functions!",
+  "version": "0.1.0-beta",
+  "license": "MIT",
+  "esnext": "dist-src/index.js",
+  "module": "dist-web/index.js",
+  "umd:main": "dist-umd/index.js",
+  "pika": true,
+  "sideEffects": false,
+  "keywords": [
+    "functional",
+    "hooks",
+    "react",
+    "web-components",
+    "webcomponents",
+    "preact"
+  ],
+  "files": [
+    "dist-*/",
+    "assets/",
+    "bin/"
+  ],
+  "homepage": "https://https//github.com/michael-klein/hookuspocus#readme",
+  "bugs": {
+    "url": "https://https://github.com/michael-klein/hookuspocus/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://https://github.com/michael-klein/hookuspocus.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@pika/pack": "^0.3.1",
+    "@pika/plugin-build-umd": "^0.3.9",
+    "@pika/plugin-build-web": "^0.3.9",
+    "@pika/plugin-standard-pkg": "^0.3.9",
+    "pika-plugin-minify": "file:pika-plugin-minify"
+  }
+}
