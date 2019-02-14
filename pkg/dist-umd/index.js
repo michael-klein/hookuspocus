@@ -50,27 +50,13 @@
 
   var _this = undefined;
 
-  var OUTSIDE_RUN = Symbol("outside_run");
-  var currentRun = OUTSIDE_RUN;
-  var hookStateMap = new (WeakMap ? WeakMap : Map)();
+  var contextMap = new (WeakMap ? WeakMap : Map)();
+  var currentContext;
 
-  var reset = function reset() {
+  var createHookApi = function createHookApi(name, contextMapEntry) {
     _newArrowCheck(this, _this);
 
-    currentRun = OUTSIDE_RUN;
-  }.bind(undefined);
-
-  var createHookApi = function createHookApi(name) {
-    _newArrowCheck(this, _this);
-
-    var hookStates = hookStateMap.get(currentRun.context);
-
-    if (hookStates[currentRun.hookStateIndex] === undefined) {
-      hookStates[currentRun.hookStateIndex] = {};
-    }
-
-    var hookState = hookStates[currentRun.hookStateIndex];
-    var onStateChange = currentRun.onStateChange;
+    var hookState = contextMapEntry.hookStates[contextMapEntry.hookStateIndex];
     return {
       onCleanUp: function onCleanUp(callback) {
         hookState.cleanUp = callback;
@@ -82,17 +68,17 @@
         hookState.afterCurrentRun = callback;
       },
       getContext: function getContext() {
-        return currentRun.context;
+        return currentContext;
       },
-      getState: function getState(initialState) {
-        if (hookState.state === undefined) hookState.state = initialState;
-        return hookState.state;
+      getValue: function getValue(initialValue) {
+        if (hookState.value === undefined) hookState.value = initialValue;
+        return hookState.value;
       },
-      setState: function setState(value) {
+      setValue: function setValue(value) {
         var silent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var oldValue = hookState.state;
-        hookState.state = value;
-        if (!silent && onStateChange) onStateChange(name, oldValue, value);
+        var oldValue = hookState.value;
+        hookState.value = value;
+        if (!silent && contextMapEntry.onValueChange) contextMapEntry.onValueChange(name, value, oldValue);
       }
     };
   }.bind(undefined);
@@ -105,113 +91,168 @@
     return function () {
       _newArrowCheck(this, _this2);
 
-      if (currentRun.context === OUTSIDE_RUN) throw new Error("Hook was called outside of run()!");
-      currentRun.hookStateIndex++;
-      var hookApi = createHookApi(name);
+      if (currentContext === undefined) throw new Error("Hook was called outside of run()!");
+      var contextMapEntry = contextMap.get(currentContext);
+      contextMapEntry.hookStateIndex++;
+
+      if (contextMapEntry.hookStates[contextMapEntry.hookStateIndex] === undefined) {
+        contextMapEntry.hookStates[contextMapEntry.hookStateIndex] = {
+          value: undefined
+        };
+        contextMapEntry.hookStates[contextMapEntry.hookStateIndex].hookApi = createHookApi(name, contextMapEntry);
+      }
 
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
 
-      return hook.apply(void 0, args.concat([hookApi]));
+      return hook.apply(void 0, [contextMapEntry.hookStates[contextMapEntry.hookStateIndex].hookApi].concat(args));
     }.bind(this);
   }.bind(undefined);
 
-  function runLifeCycleCallback(name, hookStates, length) {
-    var index = length;
+  function runLifeCycleCallback(name, hookStates) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-    while (index--) {
-      var hookState = hookStates[length - index - 1];
+    try {
+      for (var _iterator = hookStates[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var hookState = _step.value;
 
-      if (hookState[name]) {
-        hookState[name]();
-        hookState[name] = undefined;
+        if (hookState[name]) {
+          hookState[name]();
+          hookState[name] = undefined;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return != null) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
       }
     }
   }
 
+  var hookus = function hookus(context, onValueChange) {
+    _newArrowCheck(this, _this);
+
+    if (!(context instanceof Object)) throw new Error("Context must be an object!");
+    contextMap.set(context, {
+      hookStates: [],
+      hookStateIndex: -1,
+      onValueChange: onValueChange
+    });
+  }.bind(undefined);
   var cleanUp = function cleanUp(context) {
     _newArrowCheck(this, _this);
 
-    var hookStates = hookStateMap.get(context);
-    runLifeCycleCallback("cleanUp", hookStates, hookStates.length);
+    var contextMapEntry = contextMap.get(context);
+    runLifeCycleCallback("cleanUp", contextMapEntry.hookStates);
   }.bind(undefined);
   var dispose = function dispose(context) {
     _newArrowCheck(this, _this);
 
-    var hookStates = hookStateMap.get(context);
-    runLifeCycleCallback("cleanUp", hookStates, hookStates.length);
-    hookStateMap.delete(context);
+    var contextMapEntry = contextMap.get(context);
+    runLifeCycleCallback("cleanUp", contextMapEntry.hookStates);
+    contextMapEntry.hookStates.length = 0;
+    contextMapEntry.delete(context);
   }.bind(undefined);
-  var run = function run(runData) {
-    var _runData,
-        _this3 = this;
+  var pocus = function pocus(context, func) {
+    var _this3 = this;
 
     _newArrowCheck(this, _this);
 
-    if (typeof runData === "function") {
-      runData = {
-        context: runData,
-        function: runData
-      };
+    if (currentContext !== undefined) throw new Error("Tried to start a run before the end of the previous run!");
+    if (!contextMap.has(context)) throw new Error("Tried to start a run without a registered context!");
+    currentContext = context;
+    var contextMapEntry = contextMap.get(currentContext);
+    contextMapEntry.hookStateIndex = -1;
+    runLifeCycleCallback("beforeNextRun", contextMapEntry.hookStates);
+
+    for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+      args[_key2 - 2] = arguments[_key2];
     }
 
-    if (!(runData.context instanceof Object)) throw new Error("Run was called without a valid object context!");
-    currentRun = runData;
-    currentRun.hookStateIndex = -1;
-    var init = false;
+    var result = func.apply(void 0, args);
 
-    if (!hookStateMap.has(currentRun.context)) {
-      hookStateMap.set(currentRun.context, []);
-      init = true;
-    }
+    var finish = function finish(value) {
+      _newArrowCheck(this, _this3);
 
-    var hookStates = hookStateMap.get(currentRun.context);
-    var length = hookStates.length;
-    runLifeCycleCallback("beforeNextRun", hookStates, length);
-
-    for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-      args[_key2 - 1] = arguments[_key2];
-    }
-
-    var result = (_runData = runData).function.apply(_runData, args);
+      runLifeCycleCallback("afterCurrentRun", contextMapEntry.hookStates);
+      currentContext = undefined;
+      return value;
+    }.bind(this);
 
     if (result instanceof Promise) {
-      return result.then(function (value) {
-        _newArrowCheck(this, _this3);
-
-        runLifeCycleCallback("afterCurrentRun", hookStates, init ? hookStates.length : length);
-        reset();
-        return value;
-      }.bind(this));
+      return result.then(finish);
     } else {
-      runLifeCycleCallback("afterCurrentRun", hookStates, init ? hookStates.length : length);
-      reset();
-      return result;
+      return finish(result);
     }
   }.bind(undefined);
-  var useReducer = createHook("useReducer", function (reducer, initialState, _ref) {
+  var hookuspocus = function hookuspocus(func, _ref) {
     var _this4 = this;
 
-    var getState = _ref.getState,
-        setState = _ref.setState;
+    var context = _ref.context,
+        onValueChange = _ref.onValueChange;
 
     _newArrowCheck(this, _this);
 
-    var state = getState(initialState);
-    return [state, function (action) {
+    if (context === undefined) context = func;
+    hookus(context, onValueChange);
+
+    var runTime = function runTime() {
+      for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+        args[_key3] = arguments[_key3];
+      }
+
+      return pocus.apply(void 0, [context, func].concat(args));
+    };
+
+    runTime.dispose = function () {
       _newArrowCheck(this, _this4);
 
-      setState(reducer(state, action));
+      dispose(context);
+      context = undefined;
+      func = undefined;
+    }.bind(this);
+
+    runTime.cleanUp = function () {
+      _newArrowCheck(this, _this4);
+
+      return cleanUp(context);
+    }.bind(this);
+
+    return runTime;
+  }.bind(undefined);
+  var useReducer = createHook("useReducer", function (_ref2, reducer, initialState) {
+    var _this5 = this;
+
+    var getValue = _ref2.getValue,
+        setValue = _ref2.setValue;
+
+    _newArrowCheck(this, _this);
+
+    var state = getValue(initialState);
+    return [state, function (action) {
+      _newArrowCheck(this, _this5);
+
+      setValue(reducer(state, action));
     }.bind(this)];
   }.bind(undefined));
-  var useState = createHook("useState", function (initialState) {
-    var _this5 = this;
+  var useState = function useState(initialState) {
+    var _this6 = this;
 
     _newArrowCheck(this, _this);
 
     var _useReducer = useReducer(function (_, action) {
-      _newArrowCheck(this, _this5);
+      _newArrowCheck(this, _this6);
 
       return action.value;
     }.bind(this), initialState),
@@ -220,35 +261,27 @@
         dispatch = _useReducer2[1];
 
     return [state, function (newState) {
-      _newArrowCheck(this, _this5);
+      _newArrowCheck(this, _this6);
 
       return dispatch({
         type: "set_state",
         value: newState
       });
     }.bind(this)];
-  }.bind(undefined));
-  var useEffect = createHook("useEffect", function (effect) {
-    var _ref2,
-        _this6 = this;
+  }.bind(undefined);
+  var useEffect = createHook("useEffect", function (_ref3, effect, valuesIn) {
+    var _this7 = this;
 
-    _newArrowCheck(this, _this);
-
-    var valuesIn;
-
-    if ((arguments.length <= 1 ? 0 : arguments.length - 1) > 1) {
-      valuesIn = arguments.length <= 1 ? undefined : arguments[1];
-    }
-
-    var _ref3 = (_ref2 = (arguments.length <= 1 ? 0 : arguments.length - 1) - 1 + 1, _ref2 < 1 || arguments.length <= _ref2 ? undefined : arguments[_ref2]),
-        getState = _ref3.getState,
-        setState = _ref3.setState,
+    var getValue = _ref3.getValue,
+        setValue = _ref3.setValue,
         onCleanUp = _ref3.onCleanUp,
         afterCurrentRun = _ref3.afterCurrentRun;
 
-    var _getState = getState({}),
-        values = _getState.values,
-        cleanUp = _getState.cleanUp;
+    _newArrowCheck(this, _this);
+
+    var _getValue = getValue({}),
+        values = _getValue.values,
+        cleanUp = _getValue.cleanUp;
 
     var nothingChanged = false;
 
@@ -269,19 +302,19 @@
     if (!nothingChanged) {
       if (cleanUp) cleanUp();
       afterCurrentRun(function () {
-        var _this7 = this;
+        var _this8 = this;
 
-        _newArrowCheck(this, _this6);
+        _newArrowCheck(this, _this7);
 
         cleanUp = effect();
-        setState({
+        setValue({
           values: valuesIn,
           cleanUp: cleanUp
         });
 
         if (cleanUp) {
           onCleanUp(function () {
-            _newArrowCheck(this, _this7);
+            _newArrowCheck(this, _this8);
 
             cleanUp();
           }.bind(this));
@@ -293,9 +326,11 @@
   }.bind(undefined));
 
   exports.createHook = createHook;
+  exports.hookus = hookus;
   exports.cleanUp = cleanUp;
   exports.dispose = dispose;
-  exports.run = run;
+  exports.pocus = pocus;
+  exports.hookuspocus = hookuspocus;
   exports.useReducer = useReducer;
   exports.useState = useState;
   exports.useEffect = useEffect;

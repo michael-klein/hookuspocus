@@ -36,23 +36,11 @@ function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
 
-const OUTSIDE_RUN = Symbol("outside_run");
-let currentRun = OUTSIDE_RUN;
-const hookStateMap = new (WeakMap ? WeakMap : Map)();
+const contextMap = new (WeakMap ? WeakMap : Map)();
+let currentContext;
 
-const reset = () => {
-  currentRun = OUTSIDE_RUN;
-};
-
-const createHookApi = name => {
-  const hookStates = hookStateMap.get(currentRun.context);
-
-  if (hookStates[currentRun.hookStateIndex] === undefined) {
-    hookStates[currentRun.hookStateIndex] = {};
-  }
-
-  const hookState = hookStates[currentRun.hookStateIndex];
-  const onStateChange = currentRun.onStateChange;
+const createHookApi = (name, contextMapEntry) => {
+  const hookState = contextMapEntry.hookStates[contextMapEntry.hookStateIndex];
   return {
     onCleanUp(callback) {
       hookState.cleanUp = callback;
@@ -67,19 +55,19 @@ const createHookApi = name => {
     },
 
     getContext() {
-      return currentRun.context;
+      return currentContext;
     },
 
-    getState(initialState) {
-      if (hookState.state === undefined) hookState.state = initialState;
-      return hookState.state;
+    getValue(initialValue) {
+      if (hookState.value === undefined) hookState.value = initialValue;
+      return hookState.value;
     },
 
-    setState(value) {
+    setValue(value) {
       let silent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-      let oldValue = hookState.state;
-      hookState.state = value;
-      if (!silent && onStateChange) onStateChange(name, oldValue, value);
+      let oldValue = hookState.value;
+      hookState.value = value;
+      if (!silent && contextMapEntry.onValueChange) contextMapEntry.onValueChange(name, value, oldValue);
     }
 
   };
@@ -87,24 +75,27 @@ const createHookApi = name => {
 
 const createHook = (name, hook) => {
   return function () {
-    if (currentRun.context === OUTSIDE_RUN) throw new Error("Hook was called outside of run()!");
-    currentRun.hookStateIndex++;
-    const hookApi = createHookApi(name);
+    if (currentContext === undefined) throw new Error("Hook was called outside of run()!");
+    const contextMapEntry = contextMap.get(currentContext);
+    contextMapEntry.hookStateIndex++;
+
+    if (contextMapEntry.hookStates[contextMapEntry.hookStateIndex] === undefined) {
+      contextMapEntry.hookStates[contextMapEntry.hookStateIndex] = {
+        value: undefined
+      };
+      contextMapEntry.hookStates[contextMapEntry.hookStateIndex].hookApi = createHookApi(name, contextMapEntry);
+    }
 
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
 
-    return hook(...args, hookApi);
+    return hook(contextMapEntry.hookStates[contextMapEntry.hookStateIndex].hookApi, ...args);
   };
 };
 
-function runLifeCycleCallback(name, hookStates, length) {
-  let index = length;
-
-  while (index--) {
-    const hookState = hookStates[length - index - 1];
-
+function runLifeCycleCallback(name, hookStates) {
+  for (const hookState of hookStates) {
     if (hookState[name]) {
       hookState[name]();
       hookState[name] = undefined;
@@ -112,64 +103,83 @@ function runLifeCycleCallback(name, hookStates, length) {
   }
 }
 
+const hookus = (context, onValueChange) => {
+  if (!(context instanceof Object)) throw new Error("Context must be an object!");
+  contextMap.set(context, {
+    hookStates: [],
+    hookStateIndex: -1,
+    onValueChange
+  });
+};
 const cleanUp = context => {
-  const hookStates = hookStateMap.get(context);
-  runLifeCycleCallback("cleanUp", hookStates, hookStates.length);
+  const contextMapEntry = contextMap.get(context);
+  runLifeCycleCallback("cleanUp", contextMapEntry.hookStates);
 };
 const dispose = context => {
-  const hookStates = hookStateMap.get(context);
-  runLifeCycleCallback("cleanUp", hookStates, hookStates.length);
-  hookStateMap.delete(context);
+  const contextMapEntry = contextMap.get(context);
+  runLifeCycleCallback("cleanUp", contextMapEntry.hookStates);
+  contextMapEntry.hookStates.length = 0;
+  contextMapEntry.delete(context);
 };
-const run = function run(runData) {
-  if (typeof runData === "function") {
-    runData = {
-      context: runData,
-      function: runData
-    };
+const pocus = function pocus(context, func) {
+  if (currentContext !== undefined) throw new Error("Tried to start a run before the end of the previous run!");
+  if (!contextMap.has(context)) throw new Error("Tried to start a run without a registered context!");
+  currentContext = context;
+  const contextMapEntry = contextMap.get(currentContext);
+  contextMapEntry.hookStateIndex = -1;
+  runLifeCycleCallback("beforeNextRun", contextMapEntry.hookStates);
+
+  for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+    args[_key2 - 2] = arguments[_key2];
   }
 
-  if (!(runData.context instanceof Object)) throw new Error("Run was called without a valid object context!");
-  currentRun = runData;
-  currentRun.hookStateIndex = -1;
-  let init = false;
+  const result = func(...args);
 
-  if (!hookStateMap.has(currentRun.context)) {
-    hookStateMap.set(currentRun.context, []);
-    init = true;
-  }
-
-  const hookStates = hookStateMap.get(currentRun.context);
-  const length = hookStates.length;
-  runLifeCycleCallback("beforeNextRun", hookStates, length);
-
-  for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-    args[_key2 - 1] = arguments[_key2];
-  }
-
-  const result = runData.function(...args);
+  const finish = value => {
+    runLifeCycleCallback("afterCurrentRun", contextMapEntry.hookStates);
+    currentContext = undefined;
+    return value;
+  };
 
   if (result instanceof Promise) {
-    return result.then(value => {
-      runLifeCycleCallback("afterCurrentRun", hookStates, init ? hookStates.length : length);
-      reset();
-      return value;
-    });
+    return result.then(finish);
   } else {
-    runLifeCycleCallback("afterCurrentRun", hookStates, init ? hookStates.length : length);
-    reset();
-    return result;
+    return finish(result);
   }
 };
-const useReducer = createHook("useReducer", (reducer, initialState, _ref) => {
-  let getState = _ref.getState,
-      setState = _ref.setState;
-  const state = getState(initialState);
+const hookuspocus = (func, _ref) => {
+  let context = _ref.context,
+      onValueChange = _ref.onValueChange;
+  if (context === undefined) context = func;
+  hookus(context, onValueChange);
+
+  const runTime = function runTime() {
+    for (var _len3 = arguments.length, args = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments[_key3];
+    }
+
+    return pocus(context, func, ...args);
+  };
+
+  runTime.dispose = () => {
+    dispose(context);
+    context = undefined;
+    func = undefined;
+  };
+
+  runTime.cleanUp = () => cleanUp(context);
+
+  return runTime;
+};
+const useReducer = createHook("useReducer", (_ref2, reducer, initialState) => {
+  let getValue = _ref2.getValue,
+      setValue = _ref2.setValue;
+  const state = getValue(initialState);
   return [state, action => {
-    setState(reducer(state, action));
+    setValue(reducer(state, action));
   }];
 });
-const useState = createHook("useState", initialState => {
+const useState = initialState => {
   const _useReducer = useReducer((_, action) => {
     return action.value;
   }, initialState),
@@ -181,25 +191,16 @@ const useState = createHook("useState", initialState => {
     type: "set_state",
     value: newState
   })];
-});
-const useEffect = createHook("useEffect", function (effect) {
-  var _ref2;
+};
+const useEffect = createHook("useEffect", (_ref3, effect, valuesIn) => {
+  let getValue = _ref3.getValue,
+      setValue = _ref3.setValue,
+      onCleanUp = _ref3.onCleanUp,
+      afterCurrentRun = _ref3.afterCurrentRun;
 
-  let valuesIn;
-
-  if ((arguments.length <= 1 ? 0 : arguments.length - 1) > 1) {
-    valuesIn = arguments.length <= 1 ? undefined : arguments[1];
-  }
-
-  const _ref3 = (_ref2 = (arguments.length <= 1 ? 0 : arguments.length - 1) - 1 + 1, _ref2 < 1 || arguments.length <= _ref2 ? undefined : arguments[_ref2]),
-        getState = _ref3.getState,
-        setState = _ref3.setState,
-        onCleanUp = _ref3.onCleanUp,
-        afterCurrentRun = _ref3.afterCurrentRun;
-
-  let _getState = getState({}),
-      values = _getState.values,
-      cleanUp = _getState.cleanUp;
+  let _getValue = getValue({}),
+      values = _getValue.values,
+      cleanUp = _getValue.cleanUp;
 
   let nothingChanged = false;
 
@@ -221,7 +222,7 @@ const useEffect = createHook("useEffect", function (effect) {
     if (cleanUp) cleanUp();
     afterCurrentRun(() => {
       cleanUp = effect();
-      setState({
+      setValue({
         values: valuesIn,
         cleanUp
       });
@@ -237,4 +238,4 @@ const useEffect = createHook("useEffect", function (effect) {
   }
 });
 
-export { createHook, cleanUp, dispose, run, useReducer, useState, useEffect };
+export { createHook, hookus, cleanUp, dispose, pocus, hookuspocus, useReducer, useState, useEffect };
