@@ -2,16 +2,18 @@
   <img width="400px" src="https://i.imgur.com/zLWcMlv.png" alt="hookus pokus logo">
 </p>
 <p align="center">
-  <b>Add hooks to all the functions!</b>
+  <b>Add hooks to all the functions!<img src="https://img.shields.io/npm/v/hookuspocus.svg"></b>
 </p>
 <br><br>
-This is a small JavaScript library that will allow you to add hooks ([see react docs](https://reactjs.org/docs/hooks-intro.html)) to any function.
+This is a small JavaScript library that will allow you to add hooks ([https://reactjs.org/docs/hooks-intro.html) to any function.
 
 It provides the basic hooks from which you can build more complex hooks:
 
 - useReducer
 - useState
 - useEffect
+
+For a bigger example of this library at work, see my other project: [funcyjs](https://github.com/michael-klein/funcy.js)
 
 ## How it works
 
@@ -20,8 +22,8 @@ It provides the basic hooks from which you can build more complex hooks:
 #### Wrapping functions
 
 ```javascript
-import { html, render } from "./standalone.mjs";
-import { hookuspocus, useState } from "../src/index.js";
+import { html, render } from "https://unpkg.com/htm?module";
+import { hookuspocus, useState } from "https://unpkg.com/hookuspocus/dist-web/index.js";
 const renderApp = hookuspocus(
   () => {
     const [count, setCount] = useState(0);
@@ -62,7 +64,8 @@ renderApp.dispose(); // triggers cleanUp and disposed the wrapped function
 #### Usage without wrapping
 
 ```javascript
-import { hookus, pocus, useState } from "../src/index.js";
+import { html, render } from "https://unpkg.com/htm?module";
+import { hookuspocus, useState } from "https://unpkg.com/hookuspocus/dist-web/index.js";
 const context = {
   some: "context"
 };
