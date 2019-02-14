@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="400px" src="https://i.imgur.com/G3AHpOs.png" alt="hookus pokus logo">
+  <img width="400px" src="https://i.imgur.com/tGpygna.png" alt="hookus pokus logo">
 </p>
 <p align="center">
   <b>Add hooks to all the functions! <a href="https://www.npmjs.com/package/hookuspocus" target="_blank"><img src="https://img.shields.io/npm/v/hookuspocus.svg"></a></b>
