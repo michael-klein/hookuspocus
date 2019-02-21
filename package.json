@@ -7,12 +7,8 @@
     "example": "examples"
   },
   "scripts": {
-    "publish": "./node_modules/@pika/pack/dist-node/index.bin.js build && npm run minify",
-    "pack": "./node_modules/@pika/pack/dist-node/index.bin.js build && npm run minify",
-    "minify": "npm run minify-src && npm run minify-umd && npm run minify-src && npm run minify-web",
-    "minify-src": "./node_modules/.bin/babel ./pkg/dist-src/index.js --out-file ./pkg/dist-src/index.min.js -s --presets minify",
-    "minify-umd": "./node_modules/.bin/babel ./pkg/dist-umd/index.js --out-file ./pkg/dist-umd/index.min.js -s --presets minify",
-    "minify-web": "./node_modules/.bin/babel ./pkg/dist-web/index.js --out-file ./pkg/dist-web/index.min.js -s --presets minify"
+    "publish": "./node_modules/@pika/pack/dist-node/index.bin.js publish",
+    "pack": "./node_modules/@pika/pack/dist-node/index.bin.js build"
   },
   "repository": {
     "type": "git",
