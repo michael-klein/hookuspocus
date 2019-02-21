@@ -307,6 +307,7 @@
         _newArrowCheck(this, _this7);
 
         cleanUp = effect();
+        if (typeof cleanUp !== "function") cleanUp = undefined;
         setValue({
           values: valuesIn,
           cleanUp: cleanUp

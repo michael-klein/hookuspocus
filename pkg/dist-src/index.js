@@ -170,6 +170,7 @@ export const useEffect = createHook("useEffect", ({
     if (cleanUp) cleanUp();
     afterCurrentRun(() => {
       cleanUp = effect();
+      if (typeof cleanUp !== "function") cleanUp = undefined;
       setValue({
         values: valuesIn,
         cleanUp

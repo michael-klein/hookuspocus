@@ -222,6 +222,7 @@ const useEffect = createHook("useEffect", (_ref3, effect, valuesIn) => {
     if (cleanUp) cleanUp();
     afterCurrentRun(() => {
       cleanUp = effect();
+      if (typeof cleanUp !== "function") cleanUp = undefined;
       setValue({
         values: valuesIn,
         cleanUp
