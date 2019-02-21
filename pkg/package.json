@@ -1,7 +1,7 @@
 {
   "name": "hookuspocus",
   "description": "Hook up all the functions!",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "esnext": "dist-src/index.js",
   "module": "dist-web/index.js",
