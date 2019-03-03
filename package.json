@@ -2,13 +2,15 @@
   "name": "hookuspocus",
   "version": "0.2.1",
   "description": "Hook up all the functions!",
-  "main": "src/index.js",
-  "directories": {
-    "example": "examples"
-  },
+  "main": "dist/hookuspocus.js",
+  "module": "dist/hookuspocus.mjs",
+  "umd:main": "dist/hookuspocus.umd.js",
+  "source": "src/index.js",
   "scripts": {
-    "publish": "./node_modules/@pika/pack/dist-node/index.bin.js publish",
-    "pack": "./node_modules/@pika/pack/dist-node/index.bin.js build"
+    "test": "jest",
+    "clean": "rm -f dist/*",
+    "size-check": "bundlewatch",
+    "build": "npm run clean && microbundle --entry src/index.js --output dist --name hookuspocus --sourcemap true && npm run size-check"
   },
   "repository": {
     "type": "git",
@@ -30,39 +32,16 @@
   "homepage": "https://https://github.com/michael-klein/hookuspocus#readme",
   "dependencies": {},
   "devDependencies": {
-    "@pika/pack": "^0.3.1",
-    "@pika/plugin-build-umd": "^0.3.9",
-    "@pika/plugin-build-web": "^0.3.9",
-    "@pika/plugin-standard-pkg": "^0.3.9",
-    "pika-plugin-minify": "^0.1.0"
+    "bundlewatch": "^0.2.1",
+    "gzip-size-cli": "^3.0.0",
+    "microbundle": "^0.9.0"
   },
-  "@pika/pack": {
-    "pipeline": [
-      [
-        "@pika/plugin-standard-pkg",
-        {
-          "exclude": [
-            "__tests__/*",
-            "example/*",
-            "pica-plugin-minify/*"
-          ]
-        }
-      ],
-      [
-        "@pika/plugin-build-web"
-      ],
-      [
-        "@pika/plugin-build-umd",
-        {
-          "name": "hookuspocus"
-        }
-      ],
-      [
-        "pika-plugin-minify",
-        {
-          "test": "hi"
-        }
-      ]
+  "bundlewatch": {
+    "files": [
+      {
+        "path": "dist/*.js",
+        "maxSize": "1kB"
+      }
     ]
   }
 }
