@@ -34,7 +34,8 @@
   "devDependencies": {
     "bundlewatch": "^0.2.1",
     "gzip-size-cli": "^3.0.0",
-    "microbundle": "^0.9.0"
+    "microbundle": "^0.9.0",
+    "jest": "^24.1.0"
   },
   "bundlewatch": {
     "files": [
