@@ -9,8 +9,8 @@
   "scripts": {
     "test": "jest",
     "clean": "rm -f dist/*",
-    "size-check": "bundlewatch",
-    "build": "npm run clean && microbundle --entry src/index.js --output dist --name hookuspocus --sourcemap true && npm run size-check"
+    "size": "bundlewatch",
+    "build": "npm run clean && microbundle --entry src/index.js --output dist --name hookuspocus --sourcemap true"
   },
   "repository": {
     "type": "git",
