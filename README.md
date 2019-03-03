@@ -2,7 +2,7 @@
   <img src="https://i.imgur.com/G3AHpOs.png" alt="hookus pokus logo">
 </p>
 <p align="center">
-  <b>Add hooks to all the functions! <a href="https://www.npmjs.com/package/hookuspocus" target="_blank"><img src="https://img.shields.io/npm/v/hookuspocus.svg"></a></b>
+  <b>Add hooks to all the functions! <a href="https://www.npmjs.com/package/hookuspocus" target="_blank"><img src="https://img.shields.io/npm/v/hookuspocus.svg"></a> <a href="https://travis-ci.org/michael-klein/hookuspocus" target="_blank"><img src="https://travis-ci.org/michael-klein/hookuspocus.svg?branch=master"></a></b>
 </p>
 <br><br>
 This is a small JavaScript library that will allow you to add hooks ([https://reactjs.org/docs/hooks-intro.html) to any function.
