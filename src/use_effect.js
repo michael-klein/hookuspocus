@@ -5,7 +5,7 @@ export const useEffect = hookus((data, effect, values) => {
     (values &&
       !(
         values.length === data.v.length &&
-        values.every(value => ~data.v.effect.indexOf(value))
+        values.every(value => ~data.v.indexOf(value))
       ))
   ) {
     data.v = values;

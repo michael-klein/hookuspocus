@@ -20,7 +20,7 @@ test("useState does not return initialState on subsequent runs", () => {
   pocus(test);
 });
 
-test("setState persists stated between runs", () => {
+test("setState persists state between runs", () => {
   const testState = 5;
   let index = 0;
   function test() {
