@@ -24,10 +24,15 @@ const runLifeCycles = name => {
     }
   });
 };
-export const pocus = (func, arg1, arg2) => {
+export const pocus = function() {
+  const args = Array.from(arguments);
+  let funcArgs;
+  if (args[0]["pop"]) {
+    funcArgs = args.shift();
+  }
+  const context = typeof args[1] === "boolean" ? args[0] : args[1] || args[0];
+  const cleanUp = args[1] === true || args[2];
   index = 0;
-  const context = typeof arg1 === "boolean" ? func : arg1 || func;
-  const cleanUp = arg1 === true || arg2;
   dataMap.set(context, (hookData = dataMap.get(context) || [context]));
   let result;
   if (cleanUp === true) {
@@ -35,7 +40,7 @@ export const pocus = (func, arg1, arg2) => {
     dataMap.delete(context);
   } else {
     runLifeCycles("before");
-    result = func();
+    result = args[0].apply(args[0], funcArgs);
     runLifeCycles("after");
   }
   hookData = null;
