@@ -1,15 +1,19 @@
-let index;
-let hookData;
-let dataMap = new (WeakMap || Map)();
+let hookIndex;
+let stackIndex;
+const hookDataStack = [];
+const dataMap = new (WeakMap || Map)();
 export const on = (hook, cb) => {
   dataMap.set(hook, cb);
 };
 export const hookus = hookFunction => {
   return function hook() {
-    const context = hookData[0];
-    index++;
+    const context = hookDataStack[stackIndex][0];
+    hookIndex++;
     const data =
-      hookData[index] || (hookData[index] = [{ context, hook: hookFunction }]);
+      hookDataStack[stackIndex][hookIndex] ||
+      (hookDataStack[stackIndex][hookIndex] = [
+        { context, hook: hookFunction }
+      ]);
     return (dataMap.get(hook) || hookFunction).apply(
       {},
       data.concat(Array.from(arguments))
@@ -17,7 +21,7 @@ export const hookus = hookFunction => {
   };
 };
 const runLifeCycles = name => {
-  hookData.forEach(data => {
+  hookDataStack[stackIndex].forEach(data => {
     if (data[0] && data[0][name]) {
       data[0][name]();
       delete data[0][name];
@@ -32,8 +36,9 @@ export const pocus = function() {
   }
   const context = typeof args[1] === "boolean" ? args[0] : args[1] || args[0];
   const cleanUp = args[1] === true || args[2];
-  index = 0;
-  dataMap.set(context, (hookData = dataMap.get(context) || [context]));
+  hookIndex = 0;
+  stackIndex = hookDataStack.push(dataMap.get(context) || [context]) - 1;
+  dataMap.set(context, hookDataStack[stackIndex]);
   let result;
   if (cleanUp === true) {
     runLifeCycles("cleanUp");
@@ -43,6 +48,6 @@ export const pocus = function() {
     result = args[0].apply(args[0], funcArgs);
     runLifeCycles("after");
   }
-  hookData = null;
+  hookDataStack.pop();
   return result;
 };

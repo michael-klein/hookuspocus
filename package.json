@@ -2,12 +2,12 @@
   "name": "hookuspocus",
   "version": "0.2.1",
   "description": "Hook up all the functions!",
-  "main": "dist/hookuspocus.js",
-  "module": "dist/hookuspocus.mjs",
-  "umd:main": "dist/hookuspocus.umd.js",
+  "main": "src/index.js",
+  "module": "src/index.mjs",
+  "umd:main": "src/index.umd.js",
   "source": "src/index.js",
   "scripts": {
-    "test": "jest",
+    "test": "npm run build && jest",
     "clean": "rm -f dist/*",
     "size": "bundlewatch",
     "build": "npm run clean && microbundle --entry src/index.js --output dist --name hookuspocus --sourcemap true"

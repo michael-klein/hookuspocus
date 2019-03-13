@@ -3,6 +3,7 @@ const hookuspocus = require("../dist/hookuspocus");
 // use cases already covered be the useState tests will not be covered again here
 test("index exports are correct", () => {
   const exportKeys = [
+    "fidibus",
     "hookus",
     "pocus",
     "on",

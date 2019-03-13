@@ -1,4 +1,4 @@
-const { hookus, pocus, on } = require("../dist/hookuspocus");
+const { hookus, pocus, on, useState } = require("../dist/hookuspocus");
 
 // use cases already covered be the useState tests will not be covered again here
 test("pocus passes function arguments if supplied as first arg", () => {
@@ -7,6 +7,22 @@ test("pocus passes function arguments if supplied as first arg", () => {
     expect(argIn).toBe(arg);
   }
   pocus([arg], test);
+});
+
+test("nested pocus runs don't fail", () => {
+  const test1State = 1;
+  const test2State = 2;
+  function test2() {
+    const [state] = useState(test2State);
+    expect(state).toBe(test2State);
+  }
+  function test1() {
+    const [state] = useState(test1State);
+    expect(state).toBe(test1State);
+  }
+  pocus(test1);
+  pocus(test1);
+  pocus(test1);
 });
 
 test("hooks defined with hokus can be used in pocus and are passed arguments", () => {
