@@ -153,6 +153,26 @@ The data object also accepts 3 function properties: `before`, `after` and `clean
 
 useEffect uses data.after to execute effects after pocus runs and will manually call cleanUp before applying new effects if neccessary.
 
+## Intercepting hook calls 
+
+You might need to run some custom code when certain existing hooks are called. For instance, a view library might want to queue a re-render when setState from useState was called. For this purpose, hookuspocus provides the `on` method:
+
+```javascript
+import { on, useState } from "./core";
+
+on(useState, initialState => {
+  const [state, setState] = useState(initialState);
+  return [state, value => { //we return a wrapped custom implementation of setState here
+    if (value !== state) {
+      // queue rerender here
+    }
+    return setState(value);
+  }]
+})
+```
+
+`on` basically allows you to wrap the existing hook with your own logic. You pass it the hook you want to intercepts and a callback that will receive whatever arguments are passed to the hook at runtime.
+
 ### License
 
 MIT License
