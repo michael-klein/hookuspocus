@@ -5,7 +5,7 @@
   <b>Add hooks to all the functions!</b>
 </p>
 <p align="center">
-  <a href="https://www.npmjs.com/package/hookuspocus" target="_blank"><img src="https://img.shields.io/npm/v/hookuspocus.svg"></a> <a href="https://travis-ci.org/michael-klein/hookuspocus" target="_blank"><img src="https://travis-ci.org/michael-klein/hookuspocus.svg?branch=master"></a>
+  <a href="https://www.npmjs.com/package/hookuspocus" target="_blank"><img src="https://img.shields.io/npm/v/hookuspocus.svg"></a> <a href="https://travis-ci.org/michael-klein/hookuspocus" target="_blank"><img src="https://travis-ci.org/michael-klein/hookuspocus.svg?branch=master"></a> <img src="https://img.shields.io/bundlephobia/minzip/hookuspocus.svg"> <img src="https://img.shields.io/npm/dt/hookuspocus.svg"> <img src="https://img.shields.io/npm/l/hookuspocus.svg">
 </p>
 <br><br>
 
