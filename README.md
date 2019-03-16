@@ -181,7 +181,7 @@ on(useReducer, (data, reducer, initialArg, init) => {
 
 **Important**: `data.hook` is the original hook function and you should always call this in case you need to perform the normal hook functionality in `on`. If you call useReducer, for example, in the above code, you will cause an infinite loop.
 
-Incidentally, the above code is not by default provided by hookuspocus in the `onStateChanged` method:
+Incidentally, the above code is now by default provided by hookuspocus in the `onStateChanged` method:
 
 ```javascript
 import { onStateChanged } from "./core";
