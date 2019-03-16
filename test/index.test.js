@@ -7,6 +7,8 @@ test("index exports are correct", () => {
     "hookus",
     "pocus",
     "on",
+    "onStateChanged",
+    "useLayoutEffect",
     "useEffect",
     "useReducer",
     "useState"

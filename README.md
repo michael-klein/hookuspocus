@@ -9,12 +9,13 @@
 </p>
 <br><br>
 
-This is a small JavaScript library that will allow you to add [hooks](https://reactjs.org/docs/hooks-intro.html) to any function. I clocks in at less than ```700B``` minified and gzipped.
+This is a small JavaScript library that will allow you to add [hooks](https://reactjs.org/docs/hooks-intro.html) to any function. I clocks in at less than `1kb` minified and gzipped.
 
 It provides the basic hooks from which you can build more complex hooks:
 
 - useReducer
 - useState
+- useLayoutEffect
 - useEffect
 
 # Basic usage
@@ -75,6 +76,7 @@ function withHooks() {
 pocus(withHooks); //run it
 pocus(withHooks, true); //clean up
 ```
+
 hookuspocus also exports a helper function called `fidibus` that allows you to wrap a function (and context) and returns a new function you can just call repeatadly, for ease of use:
 
 ```javascript
@@ -145,7 +147,7 @@ export const useEffect = hookus((data, effect, values) => {
 });
 ```
 
-`hookus` takes a function which represents the implementation of the hook and returns a hook function. Whenever this hook is called, the wrapped function will be called with a data object followed by whatever arguments where passed to the wrapper. 
+`hookus` takes a function which represents the implementation of the hook and returns a hook function. Whenever this hook is called, the wrapped function will be called with a data object followed by whatever arguments where passed to the wrapper.
 
 The data object is the means by which hooks can interact with the hookuspocus api and persist data between pocus calls. You can add any property to the data object for the latter purpose (in the above example data.v is used to store the values array passed as second argument to useEffect).
 
@@ -153,25 +155,41 @@ The data object also accepts 3 function properties: `before`, `after` and `clean
 
 useEffect uses data.after to execute effects after pocus runs and will manually call cleanUp before applying new effects if neccessary.
 
-## Intercepting hook calls 
+## Intercepting hook calls
 
 You might need to run some custom code when certain existing hooks are called. For instance, a view library might want to queue a re-render when setState from useState was called. For this purpose, hookuspocus provides the `on` method:
 
 ```javascript
-import { on, useState } from "./core";
+import { on, useReducer } from "./core";
 
-on(useState, initialState => {
-  const [state, setState] = useState(initialState);
-  return [state, value => { //we return a wrapped custom implementation of setState here
-    if (value !== state) {
-      // queue rerender here
+on(useReducer, (data, reducer, initialArg, init) => {
+  const [state, dispatch] = data.hook(data, reducer, initialArg, init);
+  return [
+    state,
+    action => {
+      const result = dispatch(action);
+      if (state !== result) {
+        //do something when the state has changed
+      }
+      return result;
     }
-    return setState(value);
-  }]
-})
+  ];
+});
 ```
 
-`on` basically allows you to wrap the existing hook with your own logic. You pass it the hook you want to intercepts and a callback that will receive whatever arguments are passed to the hook at runtime.
+`on` basically allows you to wrap the existing hook with your own logic. You pass it the hook you want to intercept and a callback that will receive whatever arguments are passed to the hook at runtime.
+
+**Important**: `data.hook` is the original hook function and you should always call this in case you need to perform the normal hook functionality in `on`. If you call useReducer, for example, in the above code, you will cause an infinite loop.
+
+Incidentally, the above code is not by default provided by hookuspocus in the `onStateChanged` method:
+
+```javascript
+import { onStateChanged } from "./core";
+
+onStateChanged(() => {
+  // do something
+});
+```
 
 ### License
 

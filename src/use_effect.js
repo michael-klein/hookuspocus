@@ -1,19 +1,8 @@
-import { hookus } from "./core";
-export const useEffect = hookus((data, effect, values) => {
-  if (
-    !data.v ||
-    (values &&
-      !(
-        values.length === data.v.length &&
-        values.every(value => ~data.v.indexOf(value))
-      ))
-  ) {
-    data.v = values;
-    if (data.cleanUp) {
-      data.cleanUp();
-    }
-    data.after = () => {
-      data.cleanUp = effect();
-    };
-  }
-});
+import { useLayoutEffect } from "./use_layout_effect";
+
+export const useEffect = (effect, values) => {
+  useLayoutEffect(
+    () => new Promise(resolve => requestAnimationFrame(_ => resolve(effect()))),
+    values
+  );
+};

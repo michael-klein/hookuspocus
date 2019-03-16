@@ -49,15 +49,3 @@ test("data.context should contain correct context in hooks defineed with hookus"
   context = { foo: "bar" };
   pocus(test, context);
 });
-
-test("on correctly intercepts hook calls", () => {
-  const returnValue = 2;
-  const useTest = hookus(_ => {
-    return 1;
-  });
-  on(useTest, () => returnValue);
-  function test() {
-    expect(useTest()).toBe(returnValue);
-  }
-  pocus(test);
-});

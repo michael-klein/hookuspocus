@@ -1,9 +1,9 @@
-const { useEffect, pocus } = require("../dist/hookuspocus");
+const { useLayoutEffect, pocus } = require("../dist/hookuspocus");
 
-test("useEffect callbacks run in the right oder", () => {
+test("useLayoutEffect callbacks run in the right oder", () => {
   let index = 0;
   function test() {
-    useEffect(() => {
+    useLayoutEffect(() => {
       expect(index).toBe(1);
       index++;
       return () => {
@@ -16,10 +16,10 @@ test("useEffect callbacks run in the right oder", () => {
   pocus(test);
 });
 
-test("useEffect makes pocus async", () => {
+test("useLayoutEffect does not make pocus async", () => {
   let index = 0;
   function test() {
-    useEffect(() => {
+    useLayoutEffect(() => {
       index++;
     });
   }
@@ -28,28 +28,32 @@ test("useEffect makes pocus async", () => {
   pocus(test);
   pocus(test);
   pocus(test);
-  expect(index).toBe(0);
+  expect(index).toBe(5);
 });
 
-test("useEffect should skip effects if values don't change", async () => {
+test("useLayoutEffect should skip effects if values don't change", async () => {
   let index = 0;
   function test() {
-    useEffect(() => {
+    useLayoutEffect(() => {
       index++;
       return () => {
         index++;
       };
     }, [1, 2, 3, 4, 5]);
   }
-  await Promise.all([pocus(test), pocus(test), pocus(test), pocus(test)]);
+  pocus(test);
+  pocus(test);
+  pocus(test);
+  pocus(test);
+  await Promise.resolve();
   expect(index).toBe(1);
 });
 
-test("useEffect should cleanUp last non skipped effect on cleanUp call", async () => {
+test("useLayoutEffect should cleanUp last non skipped effect on cleanUp call", async () => {
   let index = 1;
   let cleanUpVal;
   function test() {
-    useEffect(() => {
+    useLayoutEffect(() => {
       index++;
       let cVal = index;
       cleanUpVal = cVal;
