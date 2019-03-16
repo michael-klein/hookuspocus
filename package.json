@@ -40,7 +40,7 @@
   "bundlewatch": {
     "files": [
       {
-        "path": "dist/*.js",
+        "path": "dist/*.*js",
         "maxSize": "1kB"
       }
     ]
