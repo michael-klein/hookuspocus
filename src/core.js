@@ -1,16 +1,18 @@
-let hookIndex;
-let stackIndex;
-const hookDataStack = [];
-export const dataMap = new (WeakMap || Map)();
 const runMap = window.___hookusPocusRunMap || new (WeakMap || Map)();
 window.___hookusPocusRunMap = runMap;
+
+const hookDataStack = runMap.h || [];
+runMap.h = [];
+
+export const dataMap = runMap.d || new (WeakMap || Map)();
+runMap.d = dataMap;
 export const hookus = hookFunction => {
   return function hook() {
-    const context = hookDataStack[stackIndex][0];
-    hookIndex++;
+    const context = hookDataStack[runMap.stackIndex][0];
+    runMap.hookIndex++;
     const data =
-      hookDataStack[stackIndex][hookIndex] ||
-      (hookDataStack[stackIndex][hookIndex] = [
+      hookDataStack[runMap.stackIndex][runMap.hookIndex] ||
+      (hookDataStack[runMap.stackIndex][runMap.hookIndex] = [
         { context, hook: hookFunction }
       ]);
     return (dataMap.get(hook) || hookFunction).apply(
@@ -20,7 +22,7 @@ export const hookus = hookFunction => {
   };
 };
 const runLifeCycles = (context, name) => {
-  const promises = hookDataStack[stackIndex]
+  const promises = hookDataStack[runMap.stackIndex]
     .map(data => {
       if (data[0] && data[0][name]) {
         const result = data[0][name]();
@@ -52,9 +54,10 @@ const run = (context, cleanUp, func, args) => {
     dataMap.delete(context);
   } else {
     return waitForContext(context, () => {
-      hookIndex = 0;
-      stackIndex = hookDataStack.push(dataMap.get(context) || [context]) - 1;
-      dataMap.set(context, hookDataStack[stackIndex]);
+      runMap.hookIndex = 0;
+      runMap.stackIndex =
+        hookDataStack.push(dataMap.get(context) || [context]) - 1;
+      dataMap.set(context, hookDataStack[runMap.stackIndex]);
       runLifeCycles(context, "before");
       return waitForContext(context, () => {
         let result = func.apply(func, args);
