@@ -2,7 +2,8 @@ let hookIndex;
 let stackIndex;
 const hookDataStack = [];
 export const dataMap = new (WeakMap || Map)();
-const runMap = new (WeakMap || Map)();
+const runMap = window.___hookusPocusRunMap || new (WeakMap || Map)();
+window.___hookusPocusRunMap = runMap;
 export const hookus = hookFunction => {
   return function hook() {
     const context = hookDataStack[stackIndex][0];
