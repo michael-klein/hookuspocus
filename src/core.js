@@ -2,7 +2,7 @@ const runMap = window.___hookusPocusRunMap || new (WeakMap || Map)();
 window.___hookusPocusRunMap = runMap;
 
 const hookDataStack = runMap.h || [];
-runMap.h = [];
+runMap.h = hookDataStack;
 
 export const dataMap = runMap.d || new (WeakMap || Map)();
 runMap.d = dataMap;
