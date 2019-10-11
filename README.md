@@ -9,7 +9,7 @@
 </p>
 <br><br>
 
-This is a small JavaScript library that will allow you to add [hooks](https://reactjs.org/docs/hooks-intro.html) to any function. I clocks in at less than `1kb` minified and gzipped.
+This is a small JavaScript library that will allow you to add [hooks](https://reactjs.org/docs/hooks-intro.html) to any function. It clocks in at less than `1kb` minified and gzipped.
 
 It provides the basic hooks from which you can build more complex hooks:
 
@@ -20,7 +20,7 @@ It provides the basic hooks from which you can build more complex hooks:
 
 # Basic usage
 
-if you don't know what they are yet, please learn about hooks from the [react docs](https://reactjs.org/docs/hooks-intro.html) before you continue.
+If you don't know what they are yet, please learn about hooks from the [react docs](https://reactjs.org/docs/hooks-intro.html) before you continue.
 
 In order to enhance any function with hooks, you need to call it through `pocus`:
 
@@ -61,7 +61,7 @@ function withHooks(arg1, arg2) {
 pocus(["Hello", "world"], withHooks);
 ```
 
-Internally, hookuspocus uses WeakMaps if possible to keep states between runs (and falls back to simple Maps). If yourtarget browsers don't all have support for WeakMaps or you need to trigger cleanUp logic (e.g.: from useEffect) after a final run, you can call pocus with `true` as the last argument. This will call all remaining cleanUp functions and remove the function/context from the map:
+Internally, hookuspocus uses WeakMaps if possible to keep states between runs (and falls back to simple Maps). If your target browsers don't all have support for WeakMaps or you need to trigger `cleanUp` logic (e.g.: from useEffect) after a final run, you can call pocus with `true` as the last argument. This will call all remaining `cleanUp` functions and remove the function/context from the map:
 
 ```javascript
 import { pocus, useEffect } from "hookuspocus";
@@ -77,7 +77,7 @@ pocus(withHooks); //run it
 pocus(withHooks, true); //clean up
 ```
 
-hookuspocus also exports a helper function called `fidibus` that allows you to wrap a function (and context) and returns a new function you can just call repeatadly, for ease of use:
+hookuspocus also exports a helper function called `fidibus` that allows you to wrap a function (and context) and returns a new function you can just call repeatedly, for ease of use:
 
 ```javascript
 import { fidibus } from "hookuspocus";
@@ -101,7 +101,7 @@ wrapped.cleanUp(); // runs cleanUp logic
 
 There are two way to create hooks for use with hookuspocus:
 
-1. By composing new hooks from existing hooks. Hooks created in this manner from other frameworks like react should just work with hookuspocus (as long as they don't rely on built in hooks that are not provided by hookuspocus).
+1. By composing new hooks from existing hooks. Hooks created in this manner from other frameworks like React should just work with hookuspocus (as long as they don't rely on built in hooks that are not provided by hookuspocus).
 
 The useState hook is actually example of a hook created this way:
 
@@ -149,11 +149,11 @@ export const useEffect = hookus((data, effect, values) => {
 
 `hookus` takes a function which represents the implementation of the hook and returns a hook function. Whenever this hook is called, the wrapped function will be called with a data object followed by whatever arguments where passed to the wrapper.
 
-The data object is the means by which hooks can interact with the hookuspocus api and persist data between pocus calls. You can add any property to the data object for the latter purpose (in the above example data.v is used to store the values array passed as second argument to useEffect).
+The data object is the means by which hooks can interact with the hookuspocus api and persist data between pocus calls. You can add any property to the data object for the latter purpose (in the above example `data.v` is used to store the values array passed as second argument to `useEffect`).
 
 The data object also accepts 3 function properties: `before`, `after` and `cleanup`. Methods that are passed to these will be called before the next hook call, after the current pocus run or respectively when cleanUp is initiated.
 
-useEffect uses data.after to execute effects after pocus runs and will manually call cleanUp before applying new effects if neccessary.
+`useEffect` uses `data.after` to execute effects after pocus runs and will manually call cleanUp before applying new effects if neccessary.
 
 ## Intercepting hook calls
 
@@ -179,7 +179,7 @@ on(useReducer, (data, reducer, initialArg, init) => {
 
 `on` basically allows you to wrap the existing hook with your own logic. You pass it the hook you want to intercept and a callback that will receive whatever arguments are passed to the hook at runtime.
 
-**Important**: `data.hook` is the original hook function and you should always call this in case you need to perform the normal hook functionality in `on`. If you call useReducer, for example, in the above code, you will cause an infinite loop.
+**Important**: `data.hook` is the original hook function and you should always call this in case you need to perform the normal hook functionality in `on`. If you call `useReducer`, for example, in the above code, you will cause an infinite loop.
 
 Incidentally, the above code is now by default provided by hookuspocus in the `onStateChanged` method:
 
