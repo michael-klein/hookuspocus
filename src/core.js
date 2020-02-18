@@ -22,7 +22,7 @@ export const hookus = hookFunction => {
   };
 };
 const runLifeCycles = (context, name) => {
-  const promises = hookDataStack[runMap.stackIndex]
+  const promises = (hookDataStack[runMap.stackIndex] || [])
     .map(data => {
       if (data[0] && data[0][name]) {
         const result = data[0][name]();
