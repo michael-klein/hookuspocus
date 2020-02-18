@@ -25,6 +25,21 @@ test("nested pocus runs don't fail", () => {
   pocus(test1);
 });
 
+test("sub pocus run don't fail", () => {
+  const test1State = 1;
+  const test2State = 2;
+  function test2() {
+    const [state] = useState(test2State);
+    expect(state).toBe(test2State);
+  }
+  function test1() {
+    const [state] = useState(test1State);
+    expect(state).toBe(test1State);
+    pocus(test2);
+  }
+  pocus(test1);
+});
+
 test("hooks defined with hokus can be used in pocus and are passed arguments", () => {
   const arg = "test";
   const useTest = hookus((data, argIn) => {
